@@ -1,0 +1,225 @@
+.LoginPage {
+    width: 100%;
+
+    .authContainer {
+        position: relative;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 100vh;
+        background: #f8f6e8;
+
+    }
+
+    .authImg {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 55%;
+        height: 100vh;
+
+        img {
+            width: 400px;
+            height: auto;
+            object-fit: cover;
+            user-select: none;
+            pointer-events: none;
+        }
+    }
+
+    .authBox {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: start;
+        width: 45%;
+        height: 100%;
+        padding: 24px;
+        background: #fff;
+        text-align: center;
+
+        .authForm {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: start;
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 14px;
+            color: #00000099;
+            margin-bottom: 20px;
+            text-align: start;
+        }
+
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: end;
+        }
+
+        .authLogo {
+            width: 50px;
+            height: auto;
+            object-fit: cover;
+            user-select: none;
+            pointer-events: none;
+            margin-bottom: 30px;
+        }
+
+    }
+
+    .inputGroup {
+        position: relative;
+        width: 100%;
+        text-align: left;
+        height: 80px;
+        margin-bottom: 5px;
+
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 10px 10px 35px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.2s;
+
+            &::placeholder {
+                color: #999;
+                font-size: 14px;
+            }
+
+            &:focus {
+                border-color: #007bff;
+                outline: none;
+            }
+        }
+
+        .inputIcon {
+            position: absolute;
+            left: 10px;
+            top: 52%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            width: 20px;
+        }
+
+        .inputIcon2 {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            width: 23px;
+        }
+    }
+
+    .passwordWrapper {
+        width: 100%;
+        position: relative;
+
+        input {
+            width: 100%;
+            padding-right: 40px;
+        }
+
+        .eyeIcon {
+            position: absolute;
+            right: 10px;
+            top: 55%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+        }
+    }
+
+    .inputError {
+        border-color: #e63946 !important;
+    }
+
+    .errorMessage {
+        font-size: 12px !important;
+        color: #e63946 !important;
+        margin-top: 2px;
+    }
+
+    .loginInfo {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px !important;
+
+        .forgotPassword {
+            text-align: right;
+            color: #007bff;
+            text-decoration: none;
+            margin-bottom: 12px;
+            background-color: transparent;
+        }
+    }
+
+    .loginButton {
+        margin-bottom: 40px;
+        width: 100%;
+        padding: 10px;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+
+        &:disabled {
+            background: #b0c4de;
+            cursor: not-allowed;
+        }
+    }
+
+    .authSwitch {
+        // width: 400px;
+        position: absolute;
+        bottom: 0;
+        text-align: start;
+        font-size: 14px !important;
+
+        .adminLink {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            background-color: transparent;
+            margin-right: 5px;
+        }
+    }
+
+
+}

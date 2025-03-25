@@ -1,0 +1,46 @@
+.Header {
+    width: 100%;
+    padding:15px 20px;
+    border-bottom: 1px solid #00000033;
+    background-color: #FFF;
+    position: sticky;
+    top: 0;
+    left: 0;
+    .container {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    &__logo {
+        width: 50px;
+        cursor: pointer;
+    }
+    &__links {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+    }
+    &__link {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+        color: #000;
+        font-size: 16px;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+        p {
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+        &:hover,
+        &.active,
+        &.active p {
+            color: #007bff;
+        }
+    }
+}
