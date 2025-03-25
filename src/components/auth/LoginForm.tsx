@@ -68,11 +68,11 @@ const LoginForm = () => {
     return (
         <div className='authContainer'>
             <div className="authImg">
-                <img src="/public/imgs/login-img.webp" alt="" />
+                <img src="/imgs/login-img.webp" alt="" />
             </div>
             <div className='authBox'>
                 <div className="authForm">
-                    <img className="authLogo" src="/public/imgs/LOGO.svg" alt="" />
+                    <img className="authLogo" src="/imgs/LOGO.svg" alt="" />
                     <h2>Saytga kirish</h2>
                     <p>Iltimos, tizimga kirish uchun login va parolingizni kiriting.</p>
                     <form onSubmit={handleSubmit(onSubmit)}>
@@ -84,7 +84,7 @@ const LoginForm = () => {
                                 placeholder="Loginni kiriting"
                                 className={errors.login ? 'inputError' : ""}
                             />
-                            <img className="inputIcon" src="/public/icons/Login-icon.svg" alt="" />
+                            <img className="inputIcon" src="/icons/Login-icon.svg" alt="" />
                             {errors.login && <p className='errorMessage'>{errors.login.message}</p>}
                         </div>
 
@@ -100,7 +100,7 @@ const LoginForm = () => {
                                 <button type="button" className='eyeIcon' onClick={() => setShowPassword(!showPassword)}>
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
-                                <img className="inputIcon2" src="/public/icons/carbon-password.svg" alt="" />
+                                <img className="inputIcon2" src="/icons/carbon-password.svg" alt="" />
                             </div>
                             {errors.hashed_password && <p className='errorMessage'>{errors.hashed_password.message}</p>}
                         </div>
