@@ -40,7 +40,7 @@ function Home() {
 
                 <Drawer
                     title="📅 Kalendar"
-                    placement="right"  
+                    placement="right"
                     closable={true}
                     onClose={() => setIsDrawerOpen(false)}
                     open={isDrawerOpen}
@@ -57,12 +57,11 @@ function Home() {
                                 value={selectedDate}
                                 views={["year", "month", "day"]}
                                 onChange={(date) => setSelectedDate(date)}
-                                
                             />
                         </DemoItem>
                     </LocalizationProvider>
                     <div className="drawer-content">
-                        <h3>1 Oktabr kuni to'lov kutilmoqda</h3>
+                        <h3>{selectedDate ? `${dayjs(selectedDate).locale("uz-latn").format("D MMMM")} kuni to'lov kutilmoqda` : "Sana tanlanmagan"}</h3>
                         <div className="drawer-content__cards">
                             <div className="drawer-content__cards-item">
                                 <h4>Avazbek Jahongirov</h4>
@@ -79,8 +78,6 @@ function Home() {
                         </div>
                     </div>
                 </Drawer>
-
-
                 <div className="Home__cards">
                     <div className="prices">
                         <div className="prices-item">
