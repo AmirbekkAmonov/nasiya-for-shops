@@ -25,19 +25,19 @@ function Header() {
           </Link>
           <div className="Header__links">
             <NavLink to="/" className="Header__link">
-              <HomeOutlined style={{ fontSize: "20px", transition: "all 0.2s ease-in-out" }} />
+              <HomeOutlined style={{ fontSize: "18px", transition: "all 0.2s ease-in-out" }} className="Header__icon" />
               <p>Asosiy</p>
             </NavLink>
             <NavLink to="/customers" className="Header__link">
-              <UserOutlined style={{ fontSize: "20px", transition: "all 0.2s ease-in-out" }} />
+              <UserOutlined style={{ fontSize: "18px", transition: "all 0.2s ease-in-out" }} className="Header__icon" />
               <p>Mijozlar</p>
             </NavLink>
             <NavLink to="/reports" className="Header__link">
-              <FileTextOutlined style={{ fontSize: "20px", transition: "all 0.2s ease-in-out" }} />
+              <FileTextOutlined style={{ fontSize: "18px", transition: "all 0.2s ease-in-out" }} className="Header__icon" />
               <p>Hisobot</p>
             </NavLink>
             <NavLink to="/settings" className="Header__link">
-              <SettingOutlined style={{ fontSize: "20px", transition: "all 0.2s ease-in-out" }} />
+              <SettingOutlined style={{ fontSize: "18px", transition: "all 0.2s ease-in-out" }} className="Header__icon" />
               <p>Sozlamalar</p>
             </NavLink>
           </div>

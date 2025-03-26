@@ -19,12 +19,24 @@
         width: 55%;
         height: 100vh;
 
+        @media (max-width: 930px) {
+            width: 50%;
+        }
+
+        @media (max-width: 700px) {
+            display: none;
+        }
+
         img {
             width: 400px;
             height: auto;
             object-fit: cover;
             user-select: none;
             pointer-events: none;
+
+            @media (max-width: 930px) {
+                width: 350px;
+            }
         }
     }
 
@@ -35,17 +47,37 @@
         align-items: start;
         width: 45%;
         height: 100%;
-        padding: 24px;
+        padding: 30px;
         background: #fff;
         text-align: center;
+
+        @media (max-width: 930px) {
+            width: 50%;
+        }
+
+        @media (max-width: 700px) {
+            width: 100%;
+        }
 
         .authForm {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: start;
-            width: 80%;
+            width: 90%;
             margin: 0 auto;
+
+            @media (max-width: 840px) {
+               width: 100%;
+            }
+
+            @media (max-width: 700px) {
+                width: 70%;
+            }
+
+            @media (max-width: 500px) {
+                width: 100%;
+            }
         }
 
         h2 {
@@ -206,11 +238,18 @@
     }
 
     .authSwitch {
-        // width: 400px;
         position: absolute;
         bottom: 0;
         text-align: start;
         font-size: 14px !important;
+
+        @media (max-width: 700px) {
+            width: 70%;
+        }
+
+        @media (max-width: 500px) {
+            width: 90%;
+        }
 
         .adminLink {
             color: #007bff;

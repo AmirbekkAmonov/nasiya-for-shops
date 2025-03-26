@@ -6,6 +6,15 @@
     position: sticky;
     top: 0;
     left: 0;
+    z-index: 999;
+
+    @media (max-width: 700px) {
+        box-shadow: 0 -2px 8px #0000000a;
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+    }
     .container {
         width: 100%;
         max-width: 1540px;
@@ -17,31 +26,67 @@
     &__logo {
         width: 50px;
         cursor: pointer;
+
+        @media (max-width: 700px) {
+            display: none;
+        }
     }
     &__links {
         display: flex;
         align-items: center;
         gap: 25px;
+
+        @media (max-width: 700px) {
+            width: 100%;
+            justify-content: space-between;
+            gap: 10px;
+        }
     }
     &__link {
         display: flex;
         align-items: center;
+        flex-direction: column;
         gap: 5px;
         text-decoration: none;
         color: #000;
         font-size: 16px;
         font-weight: 500;
         transition: all 0.2s ease-in-out;
+
         p {
             font-size: 16px;
             font-weight: 500;
             transition: all 0.2s ease-in-out;
+
+            @media (max-width: 600px) {
+                font-size: 14px;
+            }
+            @media (max-width: 300px) {
+                font-size: 12px;
+            }
+        }
+
+        .Header__icon {
+            display: none;
+
+            @media (max-width: 700px) {
+                display: block;
+            }
         }
 
         &:hover,
         &.active,
         &.active p {
             color: #007bff;
+        }
+    }
+    &__content{
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        @media (max-width: 700px) {
+            display: none;
         }
     }
 }

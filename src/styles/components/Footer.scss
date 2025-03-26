@@ -3,7 +3,9 @@
     text-align: center;
     font-size: 14px;
     border-top: 1px solid #00000033;
-
+   @media (max-width: 700px) {  
+    display: none;
+   }
   }
   
   .footer__content {

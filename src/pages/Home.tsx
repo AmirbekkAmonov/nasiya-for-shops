@@ -105,7 +105,7 @@ function Home() {
                     <div className="Home__wallet-info">
                         <div className="wallet">
                             <div className="wallet-icon">
-                                <WalletOutlined style={{ fontSize: "24px", color: "#735CD8" }} />
+                                <WalletOutlined style={{ fontSize: "24px", color: "#735CD8"}} className="wallet-icon2"  />
                             </div>
                             <div className="wallet-amount">
                                 <p>Hisobingizda</p>
