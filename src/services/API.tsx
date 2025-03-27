@@ -11,10 +11,11 @@ const API = axios.create({
 API.interceptors.request.use((req) => {
     const token = localStorage.getItem("token");
     if (token) {
-        req.headers["x-auth-token"] = token;
+        req.headers["Authorization"] = `Bearer ${token}`;
     }
     return req;
 });
+
 
 API.interceptors.response.use(
     (res) => res,

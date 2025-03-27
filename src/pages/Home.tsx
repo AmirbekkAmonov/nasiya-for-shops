@@ -14,6 +14,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import "dayjs/locale/uz-latn";
 import "../styles/pages/Home.scss";
+import { useStore } from "../hooks/useStore";
+import { UserDatabase } from "../types";
 
 dayjs.locale("uz");
 
@@ -21,14 +23,15 @@ function Home() {
     const [isVisible, setIsVisible] = useState(true);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(dayjs());
+    const { user } = useStore() as { user: UserDatabase | null };
 
     return (
         <div className="Home">
             <div className="container">
                 <div className="Home__user">
                     <div className="Home__user-info">
-                        <img src="/imgs/user.svg" alt="" />
-                        <p>Shunchaki</p>
+                        <img src={user?.data?.image || "/imgs/user.svg"} alt="User" />
+                        <p>{user?.data?.login || "Foydalanuvchi"}</p>
                     </div>
                     <button className="calendar" onClick={() => {
                         setSelectedDate(dayjs());
@@ -81,7 +84,7 @@ function Home() {
                 <div className="Home__cards">
                     <div className="prices">
                         <div className="prices-item">
-                            <h3>{isVisible ? "1.000.000 so'm" : "******"}</h3>
+                            <h3>{isVisible ? `${user?.data?.wallet || "0.00"} so'm` : "******"}</h3>
                             <p>Umumiy nasiya:</p>
                         </div>
                         <button className="toggle-btn" onClick={() => setIsVisible(!isVisible)}>
@@ -109,7 +112,7 @@ function Home() {
                             </div>
                             <div className="wallet-amount">
                                 <p>Hisobingizda</p>
-                                <h3>300 000 so'm</h3>
+                                <h3>{user?.data?.wallet || "0.00"} so'm</h3>
                             </div>
                         </div>
                         <button className="wallet-btn">
