@@ -37,7 +37,7 @@ const Customers = () => {
         </div>
 
         {loading ? (
-          <Spin size="large" />
+          <Spin size="large" className="customers__loading"/>
         ) : error ? (
           <Alert message={error} type="error" />
         ) : (
