@@ -6,9 +6,9 @@ interface PhoneNumber {
 }
 
 interface Debt {
-  debt_sum: string; 
+  debt_sum: string;
   debt_status: string;
-  total_debt_sum?: string; 
+  total_debt_sum?: string;
 }
 
 interface Debtor {
@@ -23,23 +23,21 @@ interface Debtor {
   updated_at: string;
 }
 
-
 const useDebtor = () => {
   const [debtors, setDebtors] = useState<Debtor[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Qarzdorlarni olish uchun useEffect
   useEffect(() => {
     const fetchDebtors = async () => {
+      setLoading(true);
       try {
-        const response = await API.get("/debtor?spik=0&take=10");
-
-        console.log("API Response:", response.data);
-
+        const response = await API.get("/debtor");
         if (Array.isArray(response.data?.data)) {
           setDebtors(response.data.data);
         } else {
-          setDebtors([]); 
+          setDebtors([]);
         }
       } catch (err) {
         setError("Ma'lumotlarni yuklashda xatolik yuz berdi");
@@ -51,7 +49,27 @@ const useDebtor = () => {
     fetchDebtors();
   }, []);
 
-  return { debtors, loading, error };
+  // Qarzdor qo'shish
+  const addDebtor = async (formData: any) => {
+    setLoading(true);
+    try {
+      const response = await API.post("/debtor", formData, {
+        headers: { "Content-Type": "application/json" },
+      });
+      setDebtors((prevDebtors) => [...prevDebtors, response.data]);
+      return response.data;
+    } catch (err: any) {
+      setError("Qarzdorni qo'shishda xatolik yuz berdi");
+      if (err.response) {
+        setError(err.response.data.error.message || "Noma'lum xatolik");
+      }
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { debtors, loading, error, addDebtor };
 };
 
 export default useDebtor;
