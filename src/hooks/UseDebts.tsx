@@ -6,15 +6,10 @@ interface Debt {
     debt_status: string;
     total_month: number;
     total_debt_sum?: string;
-    created_at: string; // Add the created_at property
-    next_payment_date: string; // Add the next_payment_date property
+    created_at: string; 
+    next_payment_date: string; 
   }
   
-
-interface DebtsResponse {
-  data: Debt[];
-  totalCount: number;
-}
 
 const useDebts = (debtorId: string) => {
   const [debts, setDebts] = useState<Debt[]>([]);
