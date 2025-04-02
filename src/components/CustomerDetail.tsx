@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Spin, Alert, Dropdown, Menu, Button, Modal } from "antd";
-import { MoreOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { MoreOutlined, ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
 import useDebtor from "../hooks/useDebtor";
 import useDebts from "../hooks/UseDebts";
 import "../styles/components/CustomerDetail.scss";
@@ -68,6 +68,10 @@ const CustomerDetail = () => {
 
     const activeDebts = debts.filter(debt => debt.debt_status === "active");
 
+    const handleAddDebt = () => {
+        navigate(`/add-debt/${id}`);
+    };
+
     return (
         <div className="CustomerDetail">
             <div className="container">
@@ -93,12 +97,13 @@ const CustomerDetail = () => {
                                     {activeDebts.map((debt, index) => {
                                         const createdDate = new Date(debt.created_at).getTime();
                                         const currentDate = new Date().getTime();
-                                        const monthlyPayment = Number(debt.total_debt_sum) / Number(debt.total_month);
+                                        const monthlyPayment = Math.abs(Number(debt.total_debt_sum) / Math.max(Number(debt.total_month), 1));
                                         const monthsPassed = Math.min(Math.floor((currentDate - createdDate) / (1000 * 60 * 60 * 24 * 30)), Number(debt.total_month));
                                         const paidSum = (Number(debt.total_debt_sum) / Number(debt.total_month)) * monthsPassed;
                                         const paidPercentage = Math.max((paidSum / Number(debt.total_debt_sum)) * 100, 1);
+                                        const isInvalidDebt = createdDate <= 0 || Number(debt.total_debt_sum) < 0;
                                         return (
-                                            <div className="debt-item" key={index}>
+                                            <div className="debt-item" key={index} style={isInvalidDebt ? { border: "2px solid red", backgroundColor: "rgba(255, 0, 0, 0.1)" } : {}}>
                                                 <div className="debt-item__header">
                                                     <p>{new Date(debt.created_at).toLocaleString("en-US", {
                                                         year: "numeric" as const,
@@ -129,6 +134,7 @@ const CustomerDetail = () => {
                                 </div>
                             )}
                         </div>
+                        <button className="add-debt" onClick={handleAddDebt}><PlusOutlined /> Qo'shish</button>
                     </div>
                 )}
             </div>
