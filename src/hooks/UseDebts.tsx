@@ -2,10 +2,14 @@ import { useEffect, useState } from "react";
 import API from "../services/API";
 
 interface Debt {
-  debt_sum: string;
-  debt_status: string;
-  total_debt_sum?: string;
-}
+    debt_sum: string;
+    debt_status: string;
+    total_month: number;
+    total_debt_sum?: string;
+    created_at: string; // Add the created_at property
+    next_payment_date: string; // Add the next_payment_date property
+  }
+  
 
 interface DebtsResponse {
   data: Debt[];
@@ -13,9 +17,9 @@ interface DebtsResponse {
 }
 
 const useDebts = (debtorId: string) => {
-  const [debts, setDebts] = useState<Debt[]>([]); 
-  const [loading, setLoading] = useState<boolean>(true); 
-  const [error, setError] = useState<string | null>(null); 
+  const [debts, setDebts] = useState<Debt[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchDebts = async () => {
     setLoading(true);
@@ -25,15 +29,14 @@ const useDebts = (debtorId: string) => {
           debtor_id: debtorId,
         },
       });
-      console.log("API response:", response); 
       if (response.data?.data) {
-        setDebts(response.data.data); 
+        setDebts(response.data.data);
       } else {
-        setDebts([]); 
+        setDebts([]);
       }
     } catch (err) {
       console.error("Error fetching debts:", err);
-      setError("Qarzdor ma'lumotlarini olishda xatolik yuz berdi"); 
+      setError("Qarzdor ma'lumotlarini olishda xatolik yuz berdi");
     } finally {
       setLoading(false);
     }
@@ -45,7 +48,7 @@ const useDebts = (debtorId: string) => {
     }
   }, [debtorId]);
 
-  return { debts, loading, error }; 
+  return { debts, loading, error };
 };
 
 export default useDebts;

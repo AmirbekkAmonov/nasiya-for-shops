@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Spin, Alert, Dropdown, Menu, Button, Modal, List } from "antd";
+import { Spin, Alert, Dropdown, Menu, Button, Modal } from "antd";
 import { MoreOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import useDebtor from "../hooks/useDebtor";
-import useDebts from "../hooks/UseDebts"; 
+import useDebts from "../hooks/UseDebts";
 import "../styles/components/CustomerDetail.scss";
 
 const CustomerDetail = () => {
     const { id } = useParams();
     const { getDebtorById, deleteDebtor } = useDebtor();
-    const { debts, loading: debtsLoading, error: debtsError } = useDebts(id!); // Use useDebts to get debts
+    const { debts, loading: debtsLoading, error: debtsError } = useDebts(id!);
     const [customer, setCustomer] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -37,8 +37,8 @@ const CustomerDetail = () => {
 
     const handleDelete = async () => {
         Modal.confirm({
-            title: 'Qarzdorni o\'chirishni tasdiqlaysizmi?',
-            content: 'Ushbu qarzdor o\'chirilganda, ma\'lumotlar tiklanmaydi.',
+            title: 'Qarzdorni o‘chirishni tasdiqlaysizmi?',
+            content: 'Ushbu qarzdor o‘chirilganda, ma‘lumotlar tiklanmaydi.',
             onOk: async () => {
                 const success = await deleteDebtor(id!);
                 if (success) {
@@ -64,6 +64,9 @@ const CustomerDetail = () => {
     };
 
     if (error || debtsError) return <Alert message={error || debtsError} type="error" />;
+    console.log(debts);
+
+    const activeDebts = debts.filter(debt => debt.debt_status === "active");
 
     return (
         <div className="CustomerDetail">
@@ -84,22 +87,46 @@ const CustomerDetail = () => {
                             </Dropdown>
                         </div>
                         <div className="customer__content">
-                            <h3>Debts</h3>
-                            {debts.length > 0 ? (
-                                <List
-                                    itemLayout="horizontal"
-                                    dataSource={debts}
-                                    renderItem={(debt) => (
-                                        <List.Item>
-                                            <List.Item.Meta
-                                                title={`Debt: ${debt.debt_sum}`}
-                                                description={`Status: ${debt.debt_status}`}
-                                            />
-                                        </List.Item>
-                                    )}
-                                />
+                            <h3>Faol nasiyalar</h3>
+                            {activeDebts.length > 0 ? (
+                                <div className="debt-list-container">
+                                    {activeDebts.map((debt, index) => {
+                                        const createdDate = new Date(debt.created_at).getTime();
+                                        const currentDate = new Date().getTime();
+                                        const monthlyPayment = Number(debt.total_debt_sum) / Number(debt.total_month);
+                                        const monthsPassed = Math.min(Math.floor((currentDate - createdDate) / (1000 * 60 * 60 * 24 * 30)), Number(debt.total_month));
+                                        const paidSum = (Number(debt.total_debt_sum) / Number(debt.total_month)) * monthsPassed;
+                                        const paidPercentage = Math.max((paidSum / Number(debt.total_debt_sum)) * 100, 1);
+                                        return (
+                                            <div className="debt-item" key={index}>
+                                                <div className="debt-item__header">
+                                                    <p>{new Date(debt.created_at).toLocaleString("en-US", {
+                                                        year: "numeric" as const,
+                                                        month: "short" as const,
+                                                        day: "numeric" as const,
+                                                        hour: "2-digit" as const,
+                                                        minute: "2-digit" as const,
+                                                        hour12: false
+                                                    })}</p>
+
+                                                    <h4>{Math.floor(Number(debt.debt_sum))} <span>so'm</span></h4>
+                                                </div>
+                                                <div className="debt-item__content">
+                                                    <h3>Keyingi to'lov: {new Date(debt.next_payment_date).toLocaleDateString()}</h3>
+                                                    <h4>{Math.floor(monthlyPayment)} <span>so'm</span></h4>
+                                                    <div className="progress-bar-container">
+                                                        <div className="progress-bar" style={{ width: `${paidPercentage}%` }}></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             ) : (
-                                <p>No debts found for this customer.</p>
+                                <div className="no-debt">
+                                    <h3>Mijozda hali nasiya mavjud emas</h3>
+                                    <p>Nasiya yaratish uchun pastdagi “+” tugmasini bosing</p>
+                                </div>
                             )}
                         </div>
                     </div>
