@@ -74,7 +74,42 @@ const useDebtor = () => {
     }
   };
 
-  return { debtors, loading, error, addDebtor, refetch: fetchDebtors };
+  const getDebtorById = async (id: string) => {
+    setLoading(true);
+    try {
+      const response = await API.get(`/debtor/${id}`);
+      return response.data.data; 
+    } catch (err: any) {
+      setError("Mijoz ma'lumotlarini olishda xatolik yuz berdi");
+      if (err.response) {
+        setError(err.response.data.error.message || "Noma'lum xatolik");
+      }
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteDebtor = async (id: string) => {
+    setLoading(true);
+    try {
+      await API.delete(`/debtor/${id}`);
+      
+      setDebtors((prevDebtors) => prevDebtors.filter((debtor) => debtor.id !== id));
+
+      return true;
+    } catch (err: any) {
+      setError("Qarzdorni o'chirishda xatolik yuz berdi");
+      if (err.response) {
+        setError(err.response.data.error.message || "Noma'lum xatolik");
+      }
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { debtors, loading, error, addDebtor, refetch: fetchDebtors, getDebtorById, deleteDebtor };
 };
 
 export default useDebtor;

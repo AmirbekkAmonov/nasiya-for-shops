@@ -4,12 +4,14 @@ import { Dropdown, MenuProps, Spin, Alert, message } from "antd";
 import AddDebtorModal from "../components/AddDebtorModal";
 import useDebtor from "../hooks/useDebtor";
 import "../styles/pages/Customer.scss";
+import { useNavigate } from "react-router";
 
 const Customers = () => {
   const { debtors, loading, error, addDebtor, refetch } = useDebtor();
   const [filterVisible, setFilterVisible] = useState(false);
   const [favorites, setFavorites] = useState<{ [key: string]: boolean }>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const handleAddDebtor = async (debtorData: any) => {
     try {
       await addDebtor(debtorData); 
@@ -34,6 +36,7 @@ const Customers = () => {
   const toggleFavorite = (id: string) => {
     setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+  const navigate = useNavigate();
 
   return (
     <section className="customers">
@@ -64,7 +67,7 @@ const Customers = () => {
                   0
                 );
                 return (
-                  <div key={customer.id} className="customers__item">
+                  <div key={customer.id} className="customers__item" onClick={() => navigate(`/customer/${customer.id}`)}>        
                     <div className="customers__info">
                       <h3 className="customers__name">{customer.full_name}</h3>
                       <p className="customers__phone">
