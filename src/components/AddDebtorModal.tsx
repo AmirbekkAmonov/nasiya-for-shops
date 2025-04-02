@@ -1,192 +1,226 @@
 import React, { useState } from "react";
 import { Modal, Input, Button, message } from "antd";
-import  useDebtor  from "../hooks/useDebtor";
+import {UploadOutlined} from '@ant-design/icons';
+import useDebtor from "../hooks/useDebtor";
+import '../styles/components/AddDebtorModal.scss'
 
-// O‘zbekiston telefon raqamini tekshiruvchi funksiya
-const isValidPhoneNumber = (phone: string) => {
-  const phonePattern = /^\+998\d{9}$/; // O'zbekiston telefon raqami formati
-  return phonePattern.test(phone);
+const uzbPhoneCodes = [
+  "90", "91", "93", "94", "95", "97", "98", "99", "88",
+  "33", "55", "71", "74", "75", "76", "78", "79", "67", "66", "62", "61", "43", "36", "35"
+];
+
+const validatePhoneNumber = (phone: string) => {
+  if (!phone.startsWith("+998")) return { valid: false, error: "Telefon +998 bilan boshlanishi kerak!" };
+  if (phone.length < 13) return { valid: false, error: "Telefon raqam to'liq emas!" };
+
+  const phonePattern = /^\+998(\d{2})\d{7}$/;
+  const match = phone.match(phonePattern);
+  if (!match) return { valid: false, error: "Telefon raqam noto'g'ri formatda!" };
+
+  const code = match[1];
+  if (!uzbPhoneCodes.includes(code)) return { valid: false, error: `${code} bu O'zbekiston telefon kodi emas!` };
+
+  return { valid: true, error: "" };
 };
 
-const AddDebtorModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const { addDebtor, loading, error } = useDebtor();
-  const [formData, setFormData] = useState({
+interface AddDebtorModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAddDebtor: (debtorData: any) => Promise<void>;
+}
+
+const AddDebtorModal: React.FC<AddDebtorModalProps> = ({ isOpen, onClose, onAddDebtor }) => {
+  const { loading } = useDebtor();
+
+  const initialFormData = {
     full_name: "",
     address: "",
     description: "",
-    store: "",
-    phone_numbers: ["", ""], // Telefon raqamlarining boshlang'ich qiymati
-    images: [] as string[], // Rasmlar uchun boshlang'ich qiymat
-  });
+    phone_numbers: ["+998", "+998"],
+    images: ["", ""],
+  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [formData, setFormData] = useState(initialFormData);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({
+    phone1: "",
+    phone2: "",
+  });
+  const [showErrors, setShowErrors] = useState(false);
+  const [showDescription, setShowDescription] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handlePhoneNumberChange = (index: number, value: string) => {
-    const newPhoneNumbers = [...formData.phone_numbers];
-    newPhoneNumbers[index] = value;
-    setFormData((prevData) => ({
-      ...prevData,
-      phone_numbers: newPhoneNumbers,
-    }));
+    setFormData((prevData) => {
+      const newPhoneNumbers = [...prevData.phone_numbers];
+      newPhoneNumbers[index] = value;
+      return { ...prevData, phone_numbers: newPhoneNumbers };
+    });
+
+    if (value.trim() === "+998") {
+      setErrors((prev) => ({ ...prev, [`phone${index + 1}`]: "Telefon raqam kiritilishi shart!" }));
+    } else {
+      const { valid, error } = validatePhoneNumber(value);
+      setErrors((prev) => ({ ...prev, [`phone${index + 1}`]: valid ? "" : error }));
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     if (e.target.files) {
-      const file = e.target.files[0]; // Faqat bitta faylni olish
-      const fileURL = URL.createObjectURL(file); // Faylni URLga aylantirish
+      const file = e.target.files[0];
+      const fileURL = URL.createObjectURL(file);
       const newImages = [...formData.images];
-      newImages[index] = fileURL; // Image massivida index bo‘yicha yangilash
+      newImages[index] = fileURL;
+      setFormData((prevData) => ({ ...prevData, images: newImages }));
+    }
+  };
+
+  const handleAddPhoneNumber = () => {
+    if (formData.phone_numbers.length < 4) {
       setFormData((prevData) => ({
         ...prevData,
-        images: newImages,
+        phone_numbers: [...prevData.phone_numbers, "+998"]
       }));
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Telefon raqamlarini validatsiya qilish
-    const validPhoneNumbers = formData.phone_numbers.filter(
-      (num) => num.trim() !== "" && isValidPhoneNumber(num)
-    );
-
-    if (validPhoneNumbers.length < 2) {
-      console.log("Iltimos, kamida 2 ta telefon raqamini kiriting.");
-      return;
-    }
-
-    // Rasmlar maydonini validatsiya qilish
-    if (formData.images.length !== 2) { // Rasmlar soni 2 ta bo'lishi kerak
-      console.log("Iltimos, rasmlar maydoni kamida 2 va ko‘p bo‘lmasligi kerak.");
-      return;
-    }
-
-    // Formani yuborish
-    const result = await addDebtor({
-      full_name: formData.full_name,
-      address: formData.address,
-      description: formData.description,
-      store: formData.store,
-      phone_numbers: validPhoneNumbers,
-      images: formData.images, // Rasmlar qo‘shilmoqda
-    });
-
-    if (result) {
-      message.success("Qarzdor muvaffaqiyatli qo'shildi!");
-      onClose(); // Modalni yopish
-    } else {
-      message.error("Xato yuz berdi.");
-    }
+  const handleAddDescription = () => {
+    setShowDescription(true);
   };
 
+  const handleClose = () => {
+    setFormData(initialFormData);
+    setErrors({ phone1: "", phone2: "" });
+    setShowErrors(false);
+    setShowDescription(false);
+    onClose();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowErrors(true);
+
+    if (errors.phone1 || errors.phone2 || formData.phone_numbers.includes("+998")) {
+      message.error("Iltimos, telefon raqamlarni to'g'ri kiriting!");
+      return;
+    }
+
+    if (formData.images.includes("")) {
+      message.error("Iltimos, 2 ta rasmni yuklang.");
+      return;
+    }
+
+    try {
+      await onAddDebtor({
+        full_name: formData.full_name,
+        address: formData.address,
+        description: formData.description,
+        phone_numbers: formData.phone_numbers,
+        images: formData.images,
+      });
+
+      handleClose();
+    } catch (error) {
+      message.error("Qarzdorni qo'shishda xatolik yuz berdi.");
+    }
+  };
+  
+
   return (
-    <Modal
-      title="Qarzdorni qo'shish"
-      visible={isOpen}
-      onCancel={onClose}
-      footer={null}
-      width={600}
-    >
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Full Name:</label>
-          <Input
-            type="text"
-            name="full_name"
-            value={formData.full_name}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Address:</label>
-          <Input
-            type="text"
-            name="address"
-            value={formData.address}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Description:</label>
-          <Input
-            type="text"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Store:</label>
-          <Input
-            type="text"
-            name="store"
-            value={formData.store}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Phone Number 1:</label>
-          <Input
-            type="text"
-            value={formData.phone_numbers[0]}
-            onChange={(e) => handlePhoneNumberChange(0, e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Phone Number 2:</label>
-          <Input
-            type="text"
-            value={formData.phone_numbers[1]}
-            onChange={(e) => handlePhoneNumberChange(1, e.target.value)}
-            required
-          />
+    <Modal title="Qarzdorni qo'shish" visible={isOpen} onCancel={handleClose} footer={null} width={600} style={{ top: 20 }}>
+      <form onSubmit={handleSubmit} className="add-debtor-form">
+        <div className="add-debtor-form__name">
+          <label>Ismi *</label>
+          <Input type="text" name="full_name" placeholder="Ismini kiriting" value={formData.full_name} onChange={handleInputChange} required />
         </div>
 
-        <div>
-          <label>Image 1:</label>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handleImageChange(e, 0)}
-            required
-          />
+        <div className="add-debtor-form__phone">
+          <label>Telefon raqamlari *</label>
+          {formData.phone_numbers.map((phone, index) => (
+            <div key={index}>
+              <Input
+                type="text"
+                value={phone}
+                onChange={(e) => handlePhoneNumberChange(index, e.target.value)}
+                required
+                status={showErrors && errors[`phone${index + 1}`] ? "error" : ""}
+              />
+              {showErrors && errors[`phone${index + 1}`] && (
+                <span style={{ color: "red" }}>{errors[`phone${index + 1}`]}</span>
+              )}
+            </div>
+          ))}
+          {formData.phone_numbers.length < 4 && (
+            <Button type="dashed" className="add-debtor-form__phone-add" onClick={handleAddPhoneNumber}>
+              Ko'proq qo'shish
+            </Button>
+          )}
         </div>
 
-        <div>
-          <label>Image 2:</label>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handleImageChange(e, 1)}
-            required
-          />
+        <div className="add-debtor-form__address">
+          <label>Yashash manzili</label>
+          <Input type="text" name="address" placeholder="Yashash manzilini kiriting" value={formData.address} onChange={handleInputChange} required />
         </div>
 
-        <Button type="primary" htmlType="submit" disabled={loading} style={{ marginTop: 20 }}>
-          {loading ? "Yuklanmoqda..." : "Qo'shish"}
-        </Button>
+        <div className="add-debtor-form__description">
+          {showDescription ? (
+            <div>
+              <label>Eslatma</label>
+              <Input.TextArea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                rows={4}
+              />
+            </div>
+          ) : (
+            <Button type="dashed" onClick={handleAddDescription}>
+              Eslatma qo'shish
+            </Button>
+          )}
+        </div>
+
+        <div className="add-debtor-form__images">
+          <label>Rasm biriktirish</label>
+          <div className="image-upload-container">
+            {formData.images.map((image, index) => (
+              <div key={index} className="image-upload-item">
+                <Button
+                  type="default"
+                  className="image-upload-button"
+                >
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageChange(e, index)}
+                    className="image-input"
+                  />
+                  {!image ? (
+                    <div className="image-placeholder">
+                      <span className="upload-icon"><UploadOutlined /></span> 
+                      <span>Rasm qo‘shish</span>
+                    </div>
+                  ) : (
+                    <img
+                      src={image}
+                      alt={`Preview ${index}`}
+                      className="image-preview"
+                    />
+                  )}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="modal-actions">
+          <Button type="primary" htmlType="submit" loading={loading}>
+            Saqlash
+          </Button>
+        </div>
       </form>
-
-      {error && <div style={{ color: "red" }}>{error}</div>}
-
-      {/* Rasmlar oldindan ko'rsatish */}
-      <div style={{ marginTop: 20 }}>
-        {formData.images.map((img, index) => (
-          <img key={index} src={img} alt={`Preview ${index}`} width="100" height="100" />
-        ))}
-      </div>
     </Modal>
   );
 };

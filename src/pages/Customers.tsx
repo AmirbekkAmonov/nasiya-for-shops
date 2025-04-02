@@ -1,16 +1,28 @@
 import { useState } from "react";
 import { SearchOutlined, SlidersOutlined, StarFilled, StarOutlined, UserAddOutlined } from "@ant-design/icons";
-import { Dropdown, MenuProps, Spin, Alert } from "antd";
+import { Dropdown, MenuProps, Spin, Alert, message } from "antd";
 import AddDebtorModal from "../components/AddDebtorModal";
 import useDebtor from "../hooks/useDebtor";
 import "../styles/pages/Customer.scss";
 
 const Customers = () => {
-  const { debtors, loading, error } = useDebtor();
+  const { debtors, loading, error, addDebtor, refetch } = useDebtor();
   const [filterVisible, setFilterVisible] = useState(false);
   const [favorites, setFavorites] = useState<{ [key: string]: boolean }>({});
-
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleAddDebtor = async (debtorData: any) => {
+    try {
+      await addDebtor(debtorData); 
+      message.success("Qarzdor muvaffaqiyatli qo'shildi!"); 
+  
+      setIsModalOpen(false); 
+  
+      refetch(); 
+    } catch (err) {
+      message.error("Qarzdorni qo'shishda xatolik yuz berdi.");
+    }
+  };
+  
 
   const menuItems: MenuProps["items"] = [
     { key: "1", label: "Mashhur" },
@@ -56,7 +68,7 @@ const Customers = () => {
                     <div className="customers__info">
                       <h3 className="customers__name">{customer.full_name}</h3>
                       <p className="customers__phone">
-                        {customer.phone_numbers.length > 0 ? customer.phone_numbers[0].number : "Telefon raqami yo‘q"}
+                        {customer.phone_numbers.length > 0 ? customer.phone_numbers[0].number : "Telefon raqami yo'q"}
                       </p>
                       <p className="customers__debt-label">Jami nasiya:</p>
                       <p className={`customers__debt ${totalDebt < 0 ? "negative" : "positive"}`}>
@@ -83,7 +95,7 @@ const Customers = () => {
         )}
       </div>
 
-      <AddDebtorModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AddDebtorModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAddDebtor={handleAddDebtor} />
     </section>
   );
 };
