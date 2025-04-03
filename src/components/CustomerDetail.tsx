@@ -64,13 +64,16 @@ const CustomerDetail = () => {
     };
 
     if (error || debtsError) return <Alert message={error || debtsError} type="error" />;
-    console.log(debts);
 
     const activeDebts = debts.filter(debt => debt.debt_status === "active");
 
     const handleAddDebt = () => {
         navigate(`/add-debt/${id}`);
     };
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+      }, []);
 
     return (
         <div className="CustomerDetail">

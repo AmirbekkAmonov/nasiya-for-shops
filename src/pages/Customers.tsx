@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SearchOutlined, SlidersOutlined, StarFilled, StarOutlined, UserAddOutlined } from "@ant-design/icons";
 import { Dropdown, MenuProps, Spin, Alert, message } from "antd";
 import AddDebtorModal from "../components/AddDebtorModal";
@@ -11,20 +11,20 @@ const Customers = () => {
   const [filterVisible, setFilterVisible] = useState(false);
   const [favorites, setFavorites] = useState<{ [key: string]: boolean }>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const handleAddDebtor = async (debtorData: any) => {
     try {
-      await addDebtor(debtorData); 
-      message.success("Qarzdor muvaffaqiyatli qo'shildi!"); 
-  
-      setIsModalOpen(false); 
-  
-      refetch(); 
+      await addDebtor(debtorData);
+      message.success("Qarzdor muvaffaqiyatli qo'shildi!");
+
+      setIsModalOpen(false);
+
+      refetch();
     } catch (err) {
       message.error("Qarzdorni qo'shishda xatolik yuz berdi.");
     }
   };
-  
+
 
   const menuItems: MenuProps["items"] = [
     { key: "1", label: "Mashhur" },
@@ -38,6 +38,10 @@ const Customers = () => {
   };
   const navigate = useNavigate();
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   return (
     <section className="customers">
       <div className="container">
@@ -67,7 +71,7 @@ const Customers = () => {
                   0
                 );
                 return (
-                  <div key={customer.id} className="customers__item" onClick={() => navigate(`/customer/${customer.id}`)}>        
+                  <div key={customer.id} className="customers__item" onClick={() => navigate(`/customer/${customer.id}`)}>
                     <div className="customers__info">
                       <h3 className="customers__name">{customer.full_name}</h3>
                       <p className="customers__phone">
@@ -78,7 +82,7 @@ const Customers = () => {
                         {totalDebt.toLocaleString()} so'm
                       </p>
                     </div>
-                    <div className="customers__favorite" onClick={() => toggleFavorite(customer.id)}>
+                    <div className="customers__favorite" onClick={(e) => { e.stopPropagation(); toggleFavorite(customer.id); }}>
                       {favorites[customer.id] ? <StarFilled className="star-icon active" /> : <StarOutlined className="star-icon" />}
                     </div>
                   </div>

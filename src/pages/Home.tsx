@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Drawer } from "antd";
 import {
     CalendarOutlined,
@@ -24,6 +24,10 @@ function Home() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(dayjs());
     const { user } = useStore() as { user: UserDatabase | null };
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+      }, []);
 
     return (
         <div className="Home">
