@@ -218,3 +218,63 @@
         }
     }
 }
+.product-creation-modal {
+    width: 100%;
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 1.5rem;
+  
+      .back-button {
+        position: absolute;
+        left: 0;
+      }
+  
+      .modal-title {
+        font-size: 1.25rem;
+        font-weight: 500;
+      }
+    }
+  
+    .date-picker-wrapper {
+        width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      .date-picker {
+        flex: 1;
+      }
+  
+      .calendar-icon {
+        color: #3b82f6; 
+      }
+    }
+  
+    .upload-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+  
+      .upload-icon {
+        font-size: 1.5rem;
+        color: #a1a1aa; 
+      }
+  
+      .upload-text {
+        font-size: 0.875rem;
+        color: #a1a1aa; 
+      }
+    }
+  
+    .save-button {
+      background-color: #60a5fa; 
+  
+      &:hover {
+        background-color: #3b82f6; 
+      }
+    }
+  }
+  

@@ -5,6 +5,7 @@ import { MoreOutlined, ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons
 import useDebtor from "../hooks/useDebtor";
 import useDebts from "../hooks/UseDebts";
 import "../styles/components/CustomerDetail.scss";
+import ProductCreationModal from "./Modal/ProductCreationModal";
 
 const CustomerDetail = () => {
     const { id } = useParams();
@@ -14,6 +15,16 @@ const CustomerDetail = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const hideModal = () => {
+        setIsModalOpen(false);
+    };
+
 
     useEffect(() => {
         const fetchCustomer = async () => {
@@ -67,13 +78,11 @@ const CustomerDetail = () => {
 
     const activeDebts = debts.filter(debt => debt.debt_status === "active");
 
-    const handleAddDebt = () => {
-        navigate(`/add-debt/${id}`);
-    };
+
 
     useEffect(() => {
         window.scrollTo(0, 0);
-      }, []);
+    }, []);
 
     return (
         <div className="CustomerDetail">
@@ -137,7 +146,13 @@ const CustomerDetail = () => {
                                 </div>
                             )}
                         </div>
-                        <button className="add-debt" onClick={handleAddDebt}><PlusOutlined /> Qo'shish</button>
+                        <div>
+                            <Button type="primary" onClick={showModal} size="large" className="add-debt">
+                                <PlusOutlined />
+                                Qo'shish
+                            </Button>
+                            <ProductCreationModal open={isModalOpen} onClose={hideModal} />
+                        </div>
                     </div>
                 )}
             </div>
