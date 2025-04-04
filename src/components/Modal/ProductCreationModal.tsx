@@ -1,23 +1,31 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, DatePicker, Checkbox, Select, Button, Upload, message } from 'antd';
 import { ArrowLeftOutlined, CalendarOutlined, PictureOutlined } from '@ant-design/icons';
-
+import dayjs, { Dayjs } from "dayjs";
+import type { CheckboxChangeEvent } from "antd/es/checkbox";
 const { Option } = Select;
 
 interface ProductCreationModalProps {
   open: boolean;
   onClose: () => void;
-  debtorId: string; 
-  createDebt: (debtData: any) => Promise<void>; 
+  debtorId: string;
+  createDebt: (debtData: any) => Promise<void>;
 }
 
 const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClose, debtorId, createDebt }) => {
   const [form] = Form.useForm();
   const [isTodayChecked, setIsTodayChecked] = useState(false);
-  const [isDescriptionVisible, setIsDescriptionVisible] = useState(false); 
-  const [description, setDescription] = useState(""); 
-  const [images, setImages] = useState<any[]>([]); 
+  const [isDescriptionVisible, setIsDescriptionVisible] = useState(false);
+  const [description, setDescription] = useState("");
+  const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+
+  const handleCheckboxChange = (e: CheckboxChangeEvent) => {
+    const checked = e.target?.checked || false;
+    setIsTodayChecked(checked);
+    setSelectedDate(checked ? dayjs() : null);
+  };
 
   // Izohni o'zgartirish
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -25,11 +33,11 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
   };
 
   const handleIzohButtonClick = () => {
-    setIsDescriptionVisible(true); 
+    setIsDescriptionVisible(true);
   };
 
   const handleUploadChange = (info: any) => {
-    const fileList = info.fileList.slice(-2); 
+    const fileList = info.fileList.slice(-2);
     setImages(fileList);
   };
 
@@ -43,13 +51,13 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
 
     const debtData = {
       next_payment_date: '2025-02-22',
-      debt_period: 6, 
-      debt_sum: '1000000.00', 
-      total_debt_sum: '100000.00', 
+      debt_period: 6,
+      debt_sum: '1000000.00',
+      total_debt_sum: '100000.00',
       description: description,
       images: images.map((file) => ({ image: file.url || file.name })),
-      debtor: debtorId, 
-      debt_status: 'active', 
+      debtor: debtorId,
+      debt_status: 'active',
     };
 
     try {
@@ -66,7 +74,7 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
     } finally {
       setLoading(false);
     }
-    
+
   };
   const handleModalClose = () => {
     form.resetFields();
@@ -76,6 +84,8 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
     setIsTodayChecked(false);
     onClose();
   };
+
+
 
   return (
     <Modal
@@ -110,13 +120,11 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
             <DatePicker
               placeholder="Sanani kiriting"
               className="date-picker"
-              disabled={isTodayChecked}
               suffixIcon={<CalendarOutlined className="calendar-icon" />}
+              value={selectedDate}
+              onChange={(date) => setSelectedDate(date)}
             />
-            <Checkbox
-              checked={isTodayChecked}
-              onChange={(e) => setIsTodayChecked(e.target.checked)}
-            >
+            <Checkbox checked={isTodayChecked} onChange={handleCheckboxChange}>
               Bugun
             </Checkbox>
           </div>
