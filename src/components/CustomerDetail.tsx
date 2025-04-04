@@ -10,7 +10,7 @@ import ProductCreationModal from "./Modal/ProductCreationModal";
 const CustomerDetail = () => {
     const { id } = useParams();
     const { getDebtorById, deleteDebtor } = useDebtor();
-    const { debts, loading: debtsLoading, error: debtsError } = useDebts(id!);
+    const { debts, loading: debtsLoading, error: debtsError, createDebt } = useDebts(id!); 
     const [customer, setCustomer] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,6 @@ const CustomerDetail = () => {
     const hideModal = () => {
         setIsModalOpen(false);
     };
-
 
     useEffect(() => {
         const fetchCustomer = async () => {
@@ -78,11 +77,16 @@ const CustomerDetail = () => {
 
     const activeDebts = debts.filter(debt => debt.debt_status === "active");
 
-
-
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+    const handleDebtCreation = async (debtData: any) => {
+        const result = await createDebt(debtData);  
+        if (result) {
+
+        }
+    };
 
     return (
         <div className="CustomerDetail">
@@ -151,7 +155,12 @@ const CustomerDetail = () => {
                                 <PlusOutlined />
                                 Qo'shish
                             </Button>
-                            <ProductCreationModal open={isModalOpen} onClose={hideModal} />
+                            <ProductCreationModal
+                                open={isModalOpen}
+                                onClose={hideModal}
+                                debtorId={customer?.id}
+                                createDebt={handleDebtCreation}
+                            />
                         </div>
                     </div>
                 )}

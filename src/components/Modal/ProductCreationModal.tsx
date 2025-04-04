@@ -7,54 +7,80 @@ const { Option } = Select;
 interface ProductCreationModalProps {
   open: boolean;
   onClose: () => void;
+  debtorId: string; 
+  createDebt: (debtData: any) => Promise<void>; 
 }
 
-const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClose }) => {
+const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClose, debtorId, createDebt }) => {
   const [form] = Form.useForm();
   const [isTodayChecked, setIsTodayChecked] = useState(false);
-  const [isDescriptionVisible, setIsDescriptionVisible] = useState(false); // Textarea ko'rinishini boshqarish uchun state
-  const [description, setDescription] = useState(""); // Izohni saqlash uchun state
+  const [isDescriptionVisible, setIsDescriptionVisible] = useState(false); 
+  const [description, setDescription] = useState(""); 
+  const [images, setImages] = useState<any[]>([]); 
+  const [loading, setLoading] = useState(false);
 
   // Izohni o'zgartirish
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDescription(e.target.value);
   };
 
-  // TextArea ko'rsatish yoki yashirish
   const handleIzohButtonClick = () => {
-    setIsDescriptionVisible(true); // Button bosilganda TextArea ochiladi
+    setIsDescriptionVisible(true); 
   };
 
-  // Formni yuborish
-  const handleSubmit = () => {
-    form.validateFields()
-      .then((values) => {
-        console.log('Form values:', values);
-        message.success("Mahsulot muvaffaqiyatli yaratildi");
-        form.resetFields();
-        setIsDescriptionVisible(false);  // Izohni ko'rinmas qilish
-        setDescription("");  // Izohni tozalash
-        setIsTodayChecked(false); // Bugun checkbox'ini tozalash
-        onClose();  // Modalni yopish
-      })
-      .catch((info) => {
-        console.log('Validation failed:', info);
-      });
+  const handleUploadChange = (info: any) => {
+    const fileList = info.fileList.slice(-2); 
+    setImages(fileList);
   };
 
-  // Modalni yopish va barcha ma'lumotlarni tozalash
+  const handleSubmit = async () => {
+    if (images.length < 2) {
+      message.error('Iltimos, ikkita rasm tanlang');
+      return;
+    }
+
+    setLoading(true);
+
+    const debtData = {
+      next_payment_date: '2025-02-22',
+      debt_period: 6, 
+      debt_sum: '1000000.00', 
+      total_debt_sum: '100000.00', 
+      description: description,
+      images: images.map((file) => ({ image: file.url || file.name })),
+      debtor: debtorId, 
+      debt_status: 'active', 
+    };
+
+    try {
+      await createDebt(debtData);
+      message.success('Qarz muvaffaqiyatli yaratildi!');
+      onClose();
+      form.resetFields();
+      setIsDescriptionVisible(false);
+      setDescription('');
+      setImages([]);
+      setIsTodayChecked(false);
+    } catch (error) {
+      message.error('Qarz yaratishda xatolik yuz berdi');
+    } finally {
+      setLoading(false);
+    }
+    
+  };
   const handleModalClose = () => {
-    form.resetFields();  // Form maydonlarini tozalash
-    setIsDescriptionVisible(false);  // Izohni ko'rinmas qilish
-    setDescription("");  // Izohni tozalash
-    setIsTodayChecked(false); // Bugun checkbox'ini tozalash
-    onClose();  // Modalni yopish
+    form.resetFields();
+    setIsDescriptionVisible(false);
+    setDescription('');
+    setImages([]);
+    setIsTodayChecked(false);
+    onClose();
   };
 
   return (
     <Modal
       open={open}
-      onCancel={handleModalClose}  // Modalni yopish
+      onCancel={handleModalClose}
       footer={null}
       closable={false}
       width={420}
@@ -65,7 +91,7 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
         <Button
           type="text"
           icon={<ArrowLeftOutlined />}
-          onClick={handleModalClose}  // Modalni yopish
+          onClick={handleModalClose}
           className="back-button"
         />
         <h2 className="modal-title">Nasiya yaratish</h2>
@@ -75,15 +101,11 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
         <Form.Item
           name="productName"
           label="Mahsulot nomi"
-          rules={[{ required: true, message: 'Iltimos mahsulot nomini kiriting' }]} >
+          rules={[{ required: true, message: 'Iltimos mahsulot nomini kiriting' }]}>
           <Input placeholder="Ismini kiriting" />
         </Form.Item>
 
-        <Form.Item
-          name="date"
-          label="Sana"
-          className="mb-4"
-        >
+        <Form.Item name="date" label="Sana" className="mb-4">
           <div className="date-picker-wrapper">
             <DatePicker
               placeholder="Sanani kiriting"
@@ -99,10 +121,8 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
             </Checkbox>
           </div>
         </Form.Item>
-        <Form.Item
-          name="duration"
-          label="Muddat"
-        >
+
+        <Form.Item name="duration" label="Muddat">
           <Select placeholder="Qarz muddatini tanlang">
             <Option value="1">1 oy</Option>
             <Option value="2">2 oy</Option>
@@ -129,21 +149,18 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
               value={description}
               onChange={handleDescriptionChange}
               placeholder="Izohni shu yerga yozing..."
-              autoSize={{ minRows: 4, maxRows: 6 }} 
+              autoSize={{ minRows: 4, maxRows: 6 }}
             />
           </Form.Item>
         )}
 
-        <Form.Item
-          name="images"
-          label="Rasm biriktirish"
-        >
+        <Form.Item name="images" label="Rasm biriktirish" rules={[{ required: true, message: 'Ikkita rasm tanlang!' }]}>
           <Upload
             listType="picture-card"
-            showUploadList={true}
+            showUploadList
             beforeUpload={() => false}
-            maxCount={2}
-          >
+            onChange={handleUploadChange}
+            maxCount={2}>
             <div className="upload-placeholder">
               <PictureOutlined className="upload-icon" />
               <span className="upload-text">Rasm qo'shish</span>
@@ -158,7 +175,7 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
             onClick={handleSubmit}
             block
             size="large"
-          >
+            loading={loading}>
             Saqlash
           </Button>
         </Form.Item>
