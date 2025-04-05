@@ -38,6 +38,7 @@ const DebtDetail = () => {
             console.error("Error deleting debt:", error);
         }
     };
+    
 
     const handleEdit = () => {
         if (debt) {
