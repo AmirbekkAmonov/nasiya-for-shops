@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import API from "../services/API";
 
 interface PhoneNumber {
@@ -24,92 +24,64 @@ interface Debtor {
 }
 
 const useDebtor = () => {
-  const [debtors, setDebtors] = useState<Debtor[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchDebtors = async () => {
-    setLoading(true);
-    try {
+  // Fetch all debtors
+  const { data: debtors = [], isLoading: loading, error } = useQuery({
+    queryKey: ["debtors"],
+    queryFn: async () => {
       const response = await API.get("/debtor");
-      if (Array.isArray(response.data?.data)) {
-        setDebtors(response.data.data);
-      } else {
-        setDebtors([]);
-      }
-    } catch (err) {
-      setError("Ma'lumotlarni yuklashda xatolik yuz berdi");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data?.data || [];
+    },
+  });
 
-  useEffect(() => {
-    fetchDebtors();
-  }, []);
-
-  const addDebtor = async (formData: any) => {
-    setLoading(true);
-    try {
+  // Add a new debtor
+  const addDebtorMutation = useMutation({
+    mutationFn: async (formData: any) => {
       const response = await API.post("/debtor", formData, {
         headers: { "Content-Type": "application/json" },
       });
+      return response.data.data;
+    },
+    onSuccess: (newDebtor) => {
+      queryClient.setQueryData(["debtors"], (oldDebtors: Debtor[] = []) => [newDebtor, ...oldDebtors]);
+    },
+  });
 
-      const newDebtor = response.data.data;
-
-      if (newDebtor) {
-        setDebtors((prevDebtors) => [newDebtor, ...prevDebtors]);
-      }
-      fetchDebtors();
-
-      return newDebtor;
-    } catch (err: any) {
-      setError("Qarzdorni qo'shishda xatolik yuz berdi");
-      if (err.response) {
-        setError(err.response.data.error.message || "Noma'lum xatolik");
-      }
-      return null;
-    } finally {
-      setLoading(false);
-    }
+  // Get debtor by ID
+  const getDebtorById = (id: string) => {
+    return useQuery({
+      queryKey: ["debtor", id],
+      queryFn: async () => {
+        const response = await API.get(`/debtor/${id}`);
+        return response.data.data;
+      },
+      enabled: !!id,
+    });
   };
 
-  const getDebtorById = async (id: string) => {
-    setLoading(true);
-    try {
-      const response = await API.get(`/debtor/${id}`);
-      return response.data.data; 
-    } catch (err: any) {
-      setError("Mijoz ma'lumotlarini olishda xatolik yuz berdi");
-      if (err.response) {
-        setError(err.response.data.error.message || "Noma'lum xatolik");
-      }
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteDebtor = async (id: string) => {
-    setLoading(true);
-    try {
+  // Delete debtor
+  const deleteDebtorMutation = useMutation({
+    mutationFn: async (id: string) => {
       await API.delete(`/debtor/${id}`);
-      
-      setDebtors((prevDebtors) => prevDebtors.filter((debtor) => debtor.id !== id));
+      return id;
+    },
+    onSuccess: (deletedId) => {
+      queryClient.setQueryData(["debtors"], (oldDebtors: Debtor[] = []) => 
+        oldDebtors.filter((debtor) => debtor.id !== deletedId)
+      );
+    },
+  });
 
-      return true;
-    } catch (err: any) {
-      setError("Qarzdorni o'chirishda xatolik yuz berdi");
-      if (err.response) {
-        setError(err.response.data.error.message || "Noma'lum xatolik");
-      }
-      return false;
-    } finally {
-      setLoading(false);
-    }
+  return { 
+    debtors, 
+    loading, 
+    error: error as string | null, 
+    addDebtor: addDebtorMutation.mutateAsync, 
+    refetch: () => queryClient.invalidateQueries({ queryKey: ["debtors"] }),
+    getDebtorById,
+    deleteDebtor: deleteDebtorMutation.mutateAsync 
   };
-
-  return { debtors, loading, error, addDebtor, refetch: fetchDebtors, getDebtorById, deleteDebtor };
 };
 
 export default useDebtor;

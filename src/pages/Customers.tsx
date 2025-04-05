@@ -67,7 +67,7 @@ const Customers = () => {
             {Array.isArray(debtors) && debtors.length > 0 ? (
               debtors.map((customer) => {
                 const totalDebt = customer.debts.reduce(
-                  (sum, debt) => sum + parseFloat(debt.debt_sum || "0"),
+                  (sum: number, debt: { debt_sum: string }) => sum + parseFloat(debt.debt_sum || "0"),
                   0
                 );
                 return (

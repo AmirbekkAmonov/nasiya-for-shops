@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import API from "../services/API";
 
 interface Debt {
+  id: string;
   debt_sum: string;
   debt_status: string;
   total_month: number;
@@ -21,55 +22,80 @@ interface CreateDebtParams {
   debt_status: string;
 }
 
-const useDebts = (debtorId: string) => {
-  const [debts, setDebts] = useState<Debt[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+const useDebts = (debtorId?: string) => {
+  const queryClient = useQueryClient();
 
-  const fetchDebts = async () => {
-    setLoading(true);
-    try {
+  // Fetch all debts for a debtor
+  const { data: debts = [], isLoading: loading, error } = useQuery({
+    queryKey: ["debts", debtorId],
+    queryFn: async () => {
+      if (!debtorId) return [];
       const response = await API.get(`/debts`, {
         params: {
           debtor_id: debtorId,
         },
       });
-      if (response.data?.data) {
-        setDebts(response.data.data);
-      } else {
-        setDebts([]);
-      }
-    } catch (err) {
-      console.error("Error fetching debts:", err);
-      setError("Qarzdor ma'lumotlarini olishda xatolik yuz berdi");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data?.data || [];
+    },
+    enabled: !!debtorId,
+  });
 
-  const createDebt = async (debtData: CreateDebtParams) => {
-    setLoading(true);
-    try {
+  // Create a new debt
+  const createDebtMutation = useMutation({
+    mutationFn: async (debtData: CreateDebtParams) => {
       const response = await API.post("/debts", debtData);
-      if (response.data?.data) {
-        setDebts((prevDebts) => [response.data.data, ...prevDebts]); 
-        return response.data.data; 
+      return response.data?.data;
+    },
+    onSuccess: (newDebt) => {
+      if (debtorId) {
+        queryClient.setQueryData(["debts", debtorId], (oldDebts: Debt[] = []) => [newDebt, ...oldDebts]);
       }
-    } catch (err) {
-      console.error("Error creating debt:", err);
-      setError("Yangi qarzni yaratishda xatolik yuz berdi");
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  // Fetch a specific debt by ID
+  const getDebtById = (debtId: string) => {
+    return useQuery({
+      queryKey: ["debt", debtId],
+      queryFn: async () => {
+        const response = await API.get(`/debts/${debtId}`);
+        return response.data?.data;
+      },
+      enabled: !!debtId,
+    });
   };
 
-  useEffect(() => {
-    if (debtorId) {
-      fetchDebts();
-    }
-  }, [debtorId]);
+  // Delete debt mutation
+  const deleteDebtMutation = useMutation({
+    mutationFn: async (debtId: string) => {
+      await API.delete(`/debts/${debtId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["debts", debtorId] });
+    },
+  });
 
-  return { debts, loading, error, createDebt };
+  // Update debt mutation
+  const updateDebtMutation = useMutation({
+    mutationFn: async ({ debtId, debtData }: { debtId: string; debtData: Partial<CreateDebtParams> }) => {
+      const response = await API.put(`/debts/${debtId}`, debtData);
+      return response.data?.data;
+    },
+    onSuccess: (updatedDebt) => {
+      queryClient.setQueryData(["debt", updatedDebt.id], updatedDebt);
+      queryClient.invalidateQueries({ queryKey: ["debts", debtorId] });
+    },
+  });
+
+  return { 
+    debts, 
+    loading, 
+    error: error as string | null, 
+    createDebt: createDebtMutation.mutateAsync, 
+    getDebtById,
+    deleteDebt: deleteDebtMutation.mutateAsync,
+    updateDebt: updateDebtMutation.mutateAsync
+  };
 };
 
 export default useDebts;

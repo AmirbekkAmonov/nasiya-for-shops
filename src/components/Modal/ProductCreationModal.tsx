@@ -3,6 +3,7 @@ import { Modal, Form, Input, DatePicker, Checkbox, Select, Button, Upload, messa
 import { ArrowLeftOutlined, CalendarOutlined, PictureOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from "dayjs";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
+
 const { Option } = Select;
 
 interface ProductCreationModalProps {
@@ -20,6 +21,10 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+  const [debtPeriod, setDebtPeriod] = useState<number>(0);
+  const [totalDebtSum, setTotalDebtSum] = useState<number>(0);
+  const [debtSum, setDebtSum] = useState<number>(0);
+  
 
   const handleCheckboxChange = (e: CheckboxChangeEvent) => {
     const checked = e.target?.checked || false;
@@ -27,7 +32,6 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
     setSelectedDate(checked ? dayjs() : null);
   };
 
-  // Izohni o'zgartirish
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDescription(e.target.value);
   };
@@ -41,51 +45,77 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
     setImages(fileList);
   };
 
-  const handleSubmit = async () => {
-    if (images.length < 2) {
-      message.error('Iltimos, ikkita rasm tanlang');
-      return;
+  const handleDebtPeriodChange = (value: number) => {
+    setDebtPeriod(value);
+    if (value && totalDebtSum) {
+      setDebtSum(totalDebtSum / value);
     }
+  };
 
-    setLoading(true);
+  const handleTotalDebtSumChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    setTotalDebtSum(value);
+    if (debtPeriod) {
+      setDebtSum(value / debtPeriod);
+    }
+  };
 
-    const debtData = {
-      next_payment_date: '2025-02-22',
-      debt_period: 6,
-      debt_sum: '1000000.00',
-      total_debt_sum: '100000.00',
-      description: description,
-      images: images.map((file) => ({ image: file.url || file.name })),
-      debtor: debtorId,
-      debt_status: 'active',
-    };
-
+  const handleSubmit = async () => {
     try {
+      if (images.length < 2) {
+        message.error('Iltimos, ikkita rasm tanlang');
+        return;
+      }
+  
+      setLoading(true);
+  
+      const debtData = {
+        next_payment_date: selectedDate?.format('YYYY-MM-DD') || null,
+        debt_period: debtPeriod,
+        debt_sum: debtSum.toFixed(2),
+        total_debt_sum: totalDebtSum.toFixed(2),
+        description: description,
+        images: images.map((file) => ({
+          image: file.url || file.name,
+        })),
+        debtor: debtorId,
+        debt_status: 'active',
+      };
+  
       await createDebt(debtData);
       message.success('Qarz muvaffaqiyatli yaratildi!');
+  
       onClose();
       form.resetFields();
       setIsDescriptionVisible(false);
       setDescription('');
       setImages([]);
       setIsTodayChecked(false);
+      setDebtPeriod(0);
+      setTotalDebtSum(0);
+      setDebtSum(0);
+      setSelectedDate(null);
     } catch (error) {
       message.error('Qarz yaratishda xatolik yuz berdi');
+      console.error("❌ Xatolik:", error);
     } finally {
       setLoading(false);
     }
-
   };
+    
+
   const handleModalClose = () => {
     form.resetFields();
     setIsDescriptionVisible(false);
     setDescription('');
     setImages([]);
     setIsTodayChecked(false);
+    setDebtPeriod(0);
+    setTotalDebtSum(0);
+    setDebtSum(0);
+    setSelectedDate(null);
     onClose();
   };
-
-
 
   return (
     <Modal
@@ -115,7 +145,7 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
           <Input placeholder="Ismini kiriting" />
         </Form.Item>
 
-        <Form.Item name="date" label="Sana" className="mb-4">
+        <Form.Item name="date" label="Sana" className="mb-2">
           <div className="date-picker-wrapper">
             <DatePicker
               placeholder="Sanani kiriting"
@@ -130,14 +160,31 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
           </div>
         </Form.Item>
 
-        <Form.Item name="duration" label="Muddat">
-          <Select placeholder="Qarz muddatini tanlang">
-            <Option value="1">1 oy</Option>
-            <Option value="2">2 oy</Option>
-            <Option value="3">3 oy</Option>
-            <Option value="6">6 oy</Option>
-            <Option value="12">12 oy</Option>
+        <Form.Item name="duration" label="Muddat (oy)">
+          <Select placeholder="Qarz muddatini tanlang" onChange={handleDebtPeriodChange}>
+            <Option value={1}>1 oy</Option>
+            <Option value={2}>2 oy</Option>
+            <Option value={3}>3 oy</Option>
+            <Option value={6}>6 oy</Option>
+            <Option value={12}>12 oy</Option>
           </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="totalDebtSum"
+          label="Umumiy qarz summasi"
+          rules={[{ required: true, message: 'Iltimos, umumiy qarz summasini kiriting!' }]}
+        >
+          <Input
+            placeholder="Masalan: 1000000"
+            type="number"
+            onChange={handleTotalDebtSumChange}
+            value={totalDebtSum}
+          />
+        </Form.Item>
+
+        <Form.Item label="Oylik to‘lov (avtomatik hisoblanadi)">
+          <Input value={debtSum.toFixed(2)} disabled />
         </Form.Item>
 
         {!isDescriptionVisible && (
@@ -152,7 +199,8 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
           <Form.Item
             name="description"
             label="Izoh"
-            rules={[{ required: true, message: 'Iltimos, izoh kiriting!' }]}>
+            rules={[{ required: true, message: 'Iltimos, izoh kiriting!' }]}
+          >
             <Input.TextArea
               value={description}
               onChange={handleDescriptionChange}
@@ -168,7 +216,8 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
             showUploadList
             beforeUpload={() => false}
             onChange={handleUploadChange}
-            maxCount={2}>
+            maxCount={2}
+          >
             <div className="upload-placeholder">
               <PictureOutlined className="upload-icon" />
               <span className="upload-text">Rasm qo'shish</span>
@@ -183,7 +232,8 @@ const ProductCreationModal: React.FC<ProductCreationModalProps> = ({ open, onClo
             onClick={handleSubmit}
             block
             size="large"
-            loading={loading}>
+            loading={loading}
+          >
             Saqlash
           </Button>
         </Form.Item>

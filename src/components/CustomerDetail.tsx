@@ -1,11 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Spin, Alert, Dropdown, Menu, Button, Modal } from "antd";
+import { Spin, Alert, Dropdown, Menu, Button, Modal, message } from "antd";
 import { MoreOutlined, ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
 import useDebtor from "../hooks/useDebtor";
 import useDebts from "../hooks/UseDebts";
 import "../styles/components/CustomerDetail.scss";
 import ProductCreationModal from "./Modal/ProductCreationModal";
+
+interface Debt {
+    debt_status: string;
+    created_at: string;
+    total_debt_sum: string;
+    total_month: string;
+    next_payment_date: string;
+    debt_sum: string;
+    id: string;
+}
 
 const CustomerDetail = () => {
     const { id } = useParams();
@@ -13,9 +23,18 @@ const CustomerDetail = () => {
     const { debts, loading: debtsLoading, error: debtsError, createDebt } = useDebts(id!); 
     const [customer, setCustomer] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error] = useState<string | null>(null);
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const { data: debtorData, isLoading: debtorLoading } = getDebtorById(id || "");
+
+    useEffect(() => {
+        if (debtorData) {
+            setCustomer(debtorData);
+            setLoading(false);
+        }
+    }, [debtorData]);
 
     const showModal = () => {
         setIsModalOpen(true);
@@ -25,30 +44,14 @@ const CustomerDetail = () => {
         setIsModalOpen(false);
     };
 
-    useEffect(() => {
-        const fetchCustomer = async () => {
-            if (!id) return;
-            setLoading(true);
-            const data = await getDebtorById(id);
-            if (data) {
-                setCustomer(data);
-            } else {
-                setError("Mijoz topilmadi yoki xatolik yuz berdi.");
-            }
-            setLoading(false);
-        };
-
-        fetchCustomer();
-    }, [id]);
-
     const handleEdit = () => {
         console.log("Edit customer");
     };
 
     const handleDelete = async () => {
         Modal.confirm({
-            title: 'Qarzdorni o‘chirishni tasdiqlaysizmi?',
-            content: 'Ushbu qarzdor o‘chirilganda, ma‘lumotlar tiklanmaydi.',
+            title: 'Qarzdorni o\'chirishni tasdiqlaysizmi?',
+            content: 'Ushbu qarzdor o\'chirilganda, ma\'lumotlar tiklanmaydi.',
             onOk: async () => {
                 const success = await deleteDebtor(id!);
                 if (success) {
@@ -75,27 +78,32 @@ const CustomerDetail = () => {
 
     if (error || debtsError) return <Alert message={error || debtsError} type="error" />;
 
-    const activeDebts = debts.filter(debt => debt.debt_status === "active");
+    const activeDebts = debts.filter((debt: Debt) => debt.debt_status === "active");
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
     const handleDebtCreation = async (debtData: any) => {
-        const result = await createDebt(debtData);  
-        if (result) {
-
+        try {
+            const result = await createDebt(debtData);  
+            if (result) {
+                message.success("Nasiya muvaffaqiyatli qo'shildi!");
+                hideModal();
+            }
+        } catch (err) {
+            message.error("Nasiya qo'shishda xatolik yuz berdi!");
         }
     };
 
     return (
         <div className="CustomerDetail">
             <div className="container">
-                {loading || debtsLoading ? (
+                {loading || debtsLoading || debtorLoading ? (
                     <div className="loading">
                         <Spin size="large" />
                     </div>
-                ) : (
+                ) : customer ? (
                     <div className="customer">
                         <div className="customer__header">
                             <button onClick={handleBack} className="back">
@@ -110,7 +118,7 @@ const CustomerDetail = () => {
                             <h3>Faol nasiyalar</h3>
                             {activeDebts.length > 0 ? (
                                 <div className="debt-list-container">
-                                    {activeDebts.map((debt, index) => {
+                                    {activeDebts.map((debt: Debt, index: number) => {
                                         const createdDate = new Date(debt.created_at).getTime();
                                         const currentDate = new Date().getTime();
                                         const monthlyPayment = Math.abs(Number(debt.total_debt_sum) / Math.max(Number(debt.total_month), 1));
@@ -119,7 +127,12 @@ const CustomerDetail = () => {
                                         const paidPercentage = Math.max((paidSum / Number(debt.total_debt_sum)) * 100, 1);
                                         const isInvalidDebt = createdDate <= 0 || Number(debt.total_debt_sum) < 0;
                                         return (
-                                            <div className="debt-item" key={index} style={isInvalidDebt ? { border: "2px solid red", backgroundColor: "rgba(255, 0, 0, 0.1)" } : {}}>
+                                            <div 
+                                                className="debt-item" 
+                                                key={index} 
+                                                style={isInvalidDebt ? { border: "2px solid red", backgroundColor: "rgba(255, 0, 0, 0.1)" } : {}}
+                                                onClick={() => navigate(`/debt/${debt.id}`)}
+                                            >
                                                 <div className="debt-item__header">
                                                     <p>{new Date(debt.created_at).toLocaleString("en-US", {
                                                         year: "numeric" as const,
@@ -146,7 +159,7 @@ const CustomerDetail = () => {
                             ) : (
                                 <div className="no-debt">
                                     <h3>Mijozda hali nasiya mavjud emas</h3>
-                                    <p>Nasiya yaratish uchun pastdagi “+” tugmasini bosing</p>
+                                    <p>Nasiya yaratish uchun pastdagi "+" tugmasini bosing</p>
                                 </div>
                             )}
                         </div>
@@ -162,6 +175,10 @@ const CustomerDetail = () => {
                                 createDebt={handleDebtCreation}
                             />
                         </div>
+                    </div>
+                ) : (
+                    <div className="loading">
+                        <Spin size="large" />
                     </div>
                 )}
             </div>

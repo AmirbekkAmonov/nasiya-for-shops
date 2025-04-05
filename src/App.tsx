@@ -4,7 +4,15 @@ import AppRoutes from "./router"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import './index.css'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+})
 
 function App() {
   const [loading, setLoading] = useState(true);

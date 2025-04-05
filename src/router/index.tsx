@@ -8,6 +8,7 @@ import Home from "../pages/Home";
 import Customers from "../pages/Customers";
 import Reports from "../pages/Reports";
 import Settings from "../pages/Settings";
+import DebtDetail from "../components/DebtsDetail/DebtDetail";
 
 
 function AppRoutes() {
@@ -19,6 +20,7 @@ function AppRoutes() {
           <Route path="/" element={<Home/>} />
           <Route path="/customers" element={<Customers/>} />
           <Route path="/customer/:id" element={<CustomerDetail />} />
+          <Route path="/debt/:debtId" element={<DebtDetail />} />
           <Route path="/reports" element={<Reports/>} />
           <Route path="/settings" element={<Settings/>} />
         </Route>
