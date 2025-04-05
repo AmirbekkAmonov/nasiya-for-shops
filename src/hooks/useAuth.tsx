@@ -11,7 +11,14 @@ type LoginData = {
 
 const login = async ({ login, hashed_password }: LoginData) => {
   try {
-    const response = await API.post("/auth/login", { login, hashed_password });
+    if (!login || !hashed_password) {
+      throw new Error("Login va parolni kiriting!");
+    }
+
+    const response = await API.post("/auth/login", {
+      login: login.trim(),
+      hashed_password: hashed_password.trim()
+    });
    
     if (response.status !== 200 && response.status !== 201) {
       throw new Error("Login muvaffaqiyatsiz tugadi!");
@@ -59,7 +66,12 @@ const useAuth = () => {
       console.error("Tizimga kirishda xatolik:", error);
 
       if (error?.response?.status === 400) {
-        console.log(error.response.data);
+        const errorMessage = error.response.data?.error?.message;
+        if (errorMessage === "login or password not found!") {
+          message.error("Login yoki parol noto'g'ri!");
+        } else {
+          message.error("Login va parolni kiriting!");
+        }
       } else if (error?.response?.status === 403) {
         message.warning("Siz faol emassiz. Iltimos, do'kon bilan bog'laning!");
       } else {

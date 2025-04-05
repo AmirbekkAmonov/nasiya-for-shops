@@ -1,7 +1,9 @@
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import useAuth from "../../hooks/useAuth";
-import { Input, Button } from "antd";
+import { Input, Button, Modal } from "antd";
+import { Eye, EyeOff, User, Lock } from "lucide-react";
+import "../../styles/pages/LoginPage.scss";
 
 type LoginData = {
     login: string;
@@ -12,11 +14,13 @@ const LoginForm = () => {
     const { register, handleSubmit, watch } = useForm<LoginData>();
     const [isBlocked, setIsBlocked] = useState(false);
     const [blockTime, setBlockTime] = useState(0);
+    const [showPassword, setShowPassword] = useState(false);
+    const [isAdminInfoModalOpen, setAdminInfoModalOpen] = useState(false);
     const { loginMutation } = useAuth();
 
     const login = watch("login");
     const hashed_password = watch("hashed_password");
-    const isFormFilled = login && hashed_password;
+    const isFormFilled = login?.length > 0 && hashed_password?.length > 0;
 
     useEffect(() => {
         if (blockTime > 0) {
@@ -42,37 +46,90 @@ const LoginForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="login-form">
-            <div className="form-group">
-                <label>Login</label>
-                <Input
-                    {...register("login")}
-                    placeholder="Loginni kiriting"
-                    disabled={isBlocked}
-                />
-            </div>
-            <div className="form-group">
-                <label>Parol</label>
-                <Input.Password
-                    {...register("hashed_password")}
-                    placeholder="Parolni kiriting"
-                    disabled={isBlocked}
-                />
-            </div>
-            {isBlocked && (
-                <div className="block-message">
-                    Bloklangan vaqt: {blockTime} soniya
+        <div className="LoginPage">
+            <div className="authContainer">
+                <div className="authImg">
+                    <img src="/imgs/login-img.webp" alt="Login" />
                 </div>
-            )}
-            <Button
-                type="primary"
-                htmlType="submit"
-                className="login-button"
-                disabled={!isFormFilled || isBlocked || loginMutation.isLoading}
+                <div className="authBox">
+                    <div className="authForm">
+                        <img className="authLogo" src="/imgs/LOGO.svg" alt="Logo" />
+                        <h2>Saytga kirish</h2>
+                        <p>Iltimos, tizimga kirish uchun login va parolingizni kiriting.</p>
+                        
+                        <form onSubmit={handleSubmit(onSubmit)}>
+                            <div className="inputGroup">
+                                <label>Login</label>
+                                <div className="inputWrapper">
+                                    <User className="inputIcon" size={20} />
+                                    <Input
+                                        {...register("login")}
+                                        placeholder="Loginni kiriting"
+                                        disabled={isBlocked}
+                                        className="custom-input"
+                                    />
+                                </div>
+                            </div>
+                            <div className="inputGroup">
+                                <label>Parol</label>
+                                <div className="passwordWrapper">
+                                    <Lock className="inputIcon2" size={20} />
+                                    <Input.Password
+                                        {...register("hashed_password")}
+                                        placeholder="Parolni kiriting"
+                                        disabled={isBlocked}
+                                        className="custom-input"
+                                        iconRender={(visible) => (
+                                            visible ? <EyeOff className="eyeIcon" size={20} /> : <Eye className="eyeIcon" size={20} />
+                                        )}
+                                    />
+                                </div>
+                            </div>
+                            {isBlocked && (
+                                <div className="errorMessage">
+                                    Bloklangan vaqt: {blockTime} soniya
+                                </div>
+                            )}
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                className="loginButton"
+                            >
+                                {loginMutation.isLoading ? "Kirish..." : "Kirish"}
+                            </Button>
+                        </form>
+
+                        <p className="authSwitch">
+                            Hisobingiz yo'q bo'lsa, tizimga kirish huquqini olish uchun
+                            <button 
+                                className="adminLink" 
+                                onClick={() => setAdminInfoModalOpen(true)}
+                            >
+                                do'kon administratori
+                            </button>
+                            bilan bog'laning.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <Modal
+                title="Do'kon administratori"
+                open={isAdminInfoModalOpen}
+                onCancel={() => setAdminInfoModalOpen(false)}
+                footer={[
+                    <Button 
+                        key="ok" 
+                        type="primary" 
+                        onClick={() => setAdminInfoModalOpen(false)}
+                    >
+                        Tushunarli
+                    </Button>
+                ]}
             >
-                {loginMutation.isLoading ? "Kirish..." : "Kirish"}
-            </Button>
-        </form>
+                <p>Hozircha do'kon administratori mavjud emas.</p>
+            </Modal>
+        </div>
     );
 };
 
