@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "composite": true,
+    "incremental": true,
     "tsBuildInfoFile": "./node_modules/.cache/tsbuildinfo.node",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "incremental": true
+    "strict": true
   },
   "include": ["vite.config.ts"]
 }

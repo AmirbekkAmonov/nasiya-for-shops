@@ -1,18 +1,8 @@
 import { create } from "zustand";
+import { UserDatabase } from "../types";
 
 type ThemeMode = "light" | "dark" | "system";
 type Language = "uz" | "en" | "ru"; 
-
-interface User {
-  id: number;
-  username: string;
-  name: string;
-}
-
-interface Group {
-  id: number;
-  name: string;
-}
 
 interface StoreState {
   themeMode: ThemeMode;
@@ -24,13 +14,18 @@ interface StoreState {
   language: Language;
   setLanguage: (lang: Language) => void;
 
-  user: User | null;
-  setUser: (user: User | null) => void;
+  user: UserDatabase | null;
+  setUser: (user: UserDatabase | null) => void;
 
   groups: Group[];
   addGroup: (newGroup: Group) => void;
 
   logout: () => void;
+}
+
+interface Group {
+  id: number;
+  name: string;
 }
 
 const getFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
@@ -72,7 +67,7 @@ export const useStore = create<StoreState>((set) => ({
       return { language: lang };
     }),
 
-  user: getFromLocalStorage<User | null>("user", null),
+  user: getFromLocalStorage<UserDatabase | null>("user", null),
   setUser: (user) =>
     set(() => {
       saveToLocalStorage("user", user);
